@@ -22,7 +22,7 @@ fontsize: 12pt
 
 ## How to follow this Guide 
 
-This guide is supposed to an interactive guide to learn the statistical approach of low flow analysis. The best way to learn how to analyze discharge measurements or other time series yourself is to follow this guide interactively by running the code yourself. The entire manual will be accompanied and based on the "R language and environment for statistical computing" [R Core Team, 2022]. It is a free open source software and freely accessible (https://www.r-project.org/about.html).
+This guide is supposed to an interactive guide to learn the statistical approach of low flow analysis. The best way to learn how to analyze discharge measurements or other time series yourself is to follow this guide interactively by running the code yourself. The entire manual will be accompanied and based on the "R language and environment for statistical computing" [R Core Team, 2022]. It is an open source software and freely accessible (https://www.r-project.org/about.html).
 
 The **lfanalyse** R-package was developed in the framework of this project and combines functions to analyze a discharge time series using descriptive statitics, threshold based low flow analysis and by estimating trends. For further information, please visit the package repository and find the description of the package: https://github.com/maibrittbergh/lfanalyse. 
 
@@ -42,17 +42,16 @@ library(lfanalyse)
 The  shiny [Chang et al., 2021] WebApp linked to this manual dealt with the GRDC-Dataset [GRDC, 2023]. Further information about this Project are available under the github repository of the webApp: https://github.com/maibrittbergh/lfwebapp. 
 
 The GRDC data set is continuously updated by the Global Runoff Data Centre (GRDC) and freely available under the following link: https://www.bafg.de/GRDC/EN/02_srvcs/21_tmsrs/210_prtl/prtl_node.html [GRDC, 2021]. It contains averaged daily or monthly discharge values for more than 10,000 stations in 159 countries [BFG, 2020]. The values unit is cubic metres per second. 
-To follow this guide for a specific station of interest please download it online. Otherwise, feel free to proceed following this guide by likewise using the example station "Dresden" in eastern Germany for a statistical analysis. 
-
+To follow this guide for a specific station of interest please download it online. Otherwise, feel free to proceed following this guide by likewise using the example station "Dresden" in eastern Germany for a statistical analysis. This dataset can be found in the repository of this manual (https://github.com/maibrittbergh/statisticalmanual) and was downloaded from the GRDC data center in June 2020.
 
 
 A comment on the format: In case you downloaded data from the GRDC Website [GRDC, 2023] you can easily load the dataset using the lfanalyse function **grdc_reader**. This function reads in all the locally saved GRDC datasets and stores them into a list. Each entry of the list is a different station. Furthermore you can use the lfanalyse function **metadata_grdc** to receive a metadatatable that offers you a first insight of all the stations you selected online. The example data (DRESDEN) is arranged in a list as well to maintain consistency within the project.)
 
-To work with the example dataset: Please save the file: data.rds. 
+To work with the example dataset: Please downlad and save the file: data.rds. 
 ```{r}
 #install.packages("readr")
 library(readr) #package is useful to read rds files.
-data=read_rds("path to the local folder, where you saved the rds file")
+#data=read_rds("path to the local folder, where you saved the rds file")
 
 ```
 
@@ -76,14 +75,14 @@ Overfitting debate
 
 The overall assumption that there is any kind of relation between the discharge Value (Y) and the Time (X) we can write in a general form: 
 
-Y= f(X)+ε (3.1)
+y= f(X)+ε (3.1)
 
 Independently of the example to analyze discharge data, f(X) is not known but fixed and ε is an error term, independetn of X and has zero as a mean. From f we learn what x can tell us about y. At this point it should be mentioned that f could be constructed of more than one input variable. In many cases estimating f is very important, like: 
 
 1. For Prediction
 
 One can easily think of a situation where the input (x) is available but one can't make any assumptions concerning y. Therefor we need to make a prediction $\hat{y}$ of y finding $\hat{f}$ that provides the most accuracy for y. In this case one can treat $\hat{f}$  like a **black box**. Therefor $\hat{f}$  will not be the perfect guess for our function f(x). How good our estimations of $\hat{y}$ for y are depends on the **reducible** and the **irreducible** error. The closer  $\hat{f}$ is to f the more we can reduce this **reducible** error. Nevertheless y is a function of ε (1.1) therefore it is not possible to only predict it with x (or f(x)). This gap is described as the irreducible error. 
-For a preduction  one can set ε=0 as it may contain unmeasured quantities  that might hold additional information for the prediction, but as they are not measured there is no way to conlude them into our prediction. Therefore the prediction term is: 
+For a prediction  one can set ε=0 as it may contain unmeasured quantities  that might hold additional information for the prediction, but as they are not measured there is no way to conlude them into our prediction. Therefore the prediction term is: 
 
 $\hat{y}=\hat{f}(x)$ (3.2)
 
@@ -96,15 +95,10 @@ Of course there is modeling consisting of prediction and inference at the same t
 
 
 ## Section 4: The Linear model
-From our assumptions we were able to construct f(x): a linear function.The term "linear" refers to the linear model parameters (weights, and coefficients). 
 
-A linear model is constructed from a linear function: 
-$y = w_0 + w_1* x$ (4.1)
 
-A better notation would be:
-$\hat{y}(x) = w_0 + w_1* x$ (4.2)
 
-Because as mentioned above (Section 3) $\hat{a}(x)$ clarifies that we speak about a prediction of Y (dependent on x). It is important to keep in mind that the predictors/ parameters are unknown and need to estimated in a way that the resulting model fits the data as good as possible. **As good as possible** can also be expresses numerically by determining the error:
+As mentioned above (Section 3) $\hat{y}(x)$ clarifies that we speak about a prediction of y (dependent on x). It is important to keep in mind that the predictors/ parameters are unknown and need to estimated in a way that the resulting model fits the data as good as possible. **As good as possible** can also be expresses numerically by determining the error:
 
 $e_i=y_i-\hat{y}_i$. (4.3)
 
@@ -119,23 +113,58 @@ $w_1=\frac{\sum_{i=1}^{n} (x_i-\overline{x})(y_i-\overline{y}}{\sum_{i=1}^{n} (x
 $w_0=\overline{y}-w_1\overline{x}$ (4.5)
 
 
-[LSI]. 
+
+From our assumptions (Section 1) we were assuming that there is a relationship between x and y: $y= f(X)+ε$. Furthermore we believe that the data and therefore f(x) can be represented  by a linear function. The term "linear" refers to the linear model parameters/ coefficients. 
+
+A linear model is constructed from a linear function: 
+$y = w_0 + w_1* x$ (4.1)
 
 
-To build a model from the linear function (4.1) we construct a probability distribution around the linear model by adding noise: 
+To build a model from the linear function (4.1) we construct the linear model by adding noise: 
 
-$p(y|x,w,ε)=w_0+w_1*x+ε$
+$y=w_0+w_1*x+ε$ (4.2)
 
 In this case: 
 
 1. $w_0, w_1$ are our cofficents/ parameters: $w_0$ is the intercept and $w_1$ the slope of our model
 2. $x$ is our predictor 
-3. $ε$ is our noise
+3. $ε$ the error term includes everything that we can't adress with this simple equation ($ε$ is normally treated to be independent of x) and follows a certain distribution.
+
+Disclaimer: Equation (4.2) doesn't describe the population regression line (which we usually dont have for measured/observed data) but the *least squares line*. The difference between both lines is our approach to use information generated by a sample to make assumptions about a large population. While the populare regression line is our **true** line, the least squares approach only refers to a sample of the large population.
+There is only one way to deal with this problem: How do we guarantee that our observations are unbiased? Taking more samples: The average of a large number of sample means $\hat{µ}$ can be regarded as the real mean µ. Our µ is **unbiased**. If we would only consider one sample mean $\hat{µ}$ to estimate µ this approach could be biased as this value could possibly over- or underestimate the real mean µ. 
+
+We can also formulate in a number how exact our $\hat{µ}$ functions as an estimate for µ by introducing the **standard error**:
+
+$Var(\hat{µ})=SE(\hat{µ})^2=\frac{σ^2}{n}$ (4.3)
+
+This quantity tells us the average distance from $\hat{µ}$ to µ and how it decreases with n. What do we learn from that regarding our "simple" linear regression? The estimates of $w_0$ and $w_1$ are better and our standard error of these quantities is smaller the bigger our dataset is.
+Assmuning that the errors of all the observations are uncorrelated but have a common variance $σ^2$ we can say: 
+
+$SE(\hat{w_0})^2=σ^2[{\frac{1}{n}+\frac{\overline{x}^2}{\sum_{i=1}^{n} (x_i-\overline{x})}}]$
+
+$SE(\hat{w_1})^2=\frac{σ^2}{\sum_{i=1}^{n} (x_i-\overline{x})}$
+
+One should formally write  $\hat{w_0}$ and $\hat{w_1}$ if $σ^2$ following our thoughts from Section 3. In order to keep the script simple we stick to ${w_0}, {w_1}$.
 
 
-We distinguish between Univariate models (with just a single predictor) and Multivariate models with more than one predictor [korup, lecture Linear models]. As soon as we have multiple predictors it is more complicated to interpreatate the coefficients as they are dependent on the other variables in the model [Data Analysis Andrew Gelman ]
 
-The noise 
+### Noise
+
+Everything that is not explained with our model? This could just be a measurement error that we can never really rule out. Also its possible that there are other variables than x that cause y to vary. Therefore looking at the noise can be very interesting to detect underlying trends and factors [A. King, 2018].
+
+The noise follows a certain distribution
+
+
+
+
+In our example, looking at discharge data,it's probably not necessary to mention that precipitation, temperature, ground water storage.. as well have an influence on our variable. Although it might seam obvious it is important to be mentioned as these variables partly explain uncertainties in our approach and results. 
+
+### How many Predictors?
+We distinguish between Univariate models (with just a single predictor) and Multivariate models with more than one predictor. As soon as we have multiple predictors it is more complicated to interpreatate the coefficients as they are dependent on the other variables in the model [Data Analysis Andrew Gelman]. 
+
+In our analysis we will only look at a univariate model as our data   [GRDC, 2021] simply consits of daily discharge measurements.
+
+
 
 
 
@@ -151,5 +180,5 @@ R Core Team 2022: computing. R Foundation for Statistical Computing, Vienna, Aus
  URL https://www.R-project.org/.
 
 [GRDC, 2023]
-
+© 2018 Aaron A. King.: https://kinglab.eeb.lsa.umich.edu/480/prob/prob.html
 [Chang et al., 2021]- shiny package
