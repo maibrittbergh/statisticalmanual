@@ -42,15 +42,21 @@ library(lfanalyse)
 The  shiny [Chang et al., 2021] WebApp linked to this manual dealt with the GRDC-Dataset [GRDC, 2023]. Further information about this Project are available under the github repository of the webApp: https://github.com/maibrittbergh/lfwebapp. 
 
 The GRDC data set is continuously updated by the Global Runoff Data Centre (GRDC) and freely available under the following link: https://www.bafg.de/GRDC/EN/02_srvcs/21_tmsrs/210_prtl/prtl_node.html [GRDC, 2021]. It contains averaged daily or monthly discharge values for more than 10,000 stations in 159 countries [BFG, 2020]. The values unit is cubic metres per second. 
-To follow this guide for a specific station of interest please download it and open the guide. Otherwise, feel free to proceed following this guide by likewise using the example station "Dresden" in eastern Germany for a statistical analysis. 
+To follow this guide for a specific station of interest please download it online. Otherwise, feel free to proceed following this guide by likewise using the example station "Dresden" in eastern Germany for a statistical analysis. 
 
+
+
+A comment on the format: In case you downloaded data from the GRDC Website [GRDC, 2023] you can easily load the dataset using the lfanalyse function **grdc_reader**. This function reads in all the locally saved GRDC datasets and stores them into a list. Each entry of the list is a different station. Furthermore you can use the lfanalyse function **metadata_grdc** to receive a metadatatable that offers you a first insight of all the stations you selected online. The example data (DRESDEN) is arranged in a list as well to maintain consistency within the project.)
+
+To work with the example dataset: Please save the file: data.rds. 
 ```{r}
-
-
+#install.packages("readr")
+library(readr) #package is useful to read rds files.
+data=read_rds("path to the local folder, where you saved the rds file")
 
 ```
 
-
+Now you will see a list in your working directory.
 
 ## Section 1: The goal of the Analysis
 
@@ -60,7 +66,7 @@ In this Analysis a linear model was choosen to express a trend #expected a linea
 
 ## Section 2: Descriptive Statistics: The Variety of the Dataset
 
-Although there is not one model that fits best to all datasets, we decided to stick to the linear model to be able to compare the outputs with each other. Of course we are very likely to loose information by trying to summarize the entire dataset in straigh lines of different slopes. For example: It could be possible that due to an increasing number of extreme heat events since 2000 there might have also more water scarcity events since 2000. But if we only adjust a straight line from 1860 to 2000 we might loose information. Other models? This is an important and right point that leads us directly to a whole debate. All around the sentence: 
+Although there is not one model that fits best to all dataset, we decided to stick to the linear model to be able to compare the outputs with each other. Of course we are very likely to loose information by trying to summarize the entire dataset in straigh lines of different slopes. For example: It could be possible that due to an increasing number of extreme heat events since 2000 there might have also more water scarcity events since 2000. But if we only adjust a straight line from 1860 to 2000 we might loose information. Other models? This is an important and right point that leads us directly to a whole debate. All around the sentence: 
 
 To put it in George E. P. Box words: “All models are wrong, but some are useful”
 
