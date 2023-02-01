@@ -22,7 +22,34 @@ fontsize: 12pt
 
 ## How to follow this Guide 
 
-To be able to take as much as possible from this guide to be able to analyze 
+This guide is supposed to an interactive guide to learn the statistical approach of low flow analysis. The best way to learn how to analyze discharge measurements or other time series yourself is to follow this guide interactively by running the code yourself. The entire manual will be accompanied and based on the "R language and environment for statistical computing" [R Core Team, 2022]. It is a free open source software and freely accessible (https://www.r-project.org/about.html).
+
+The **lfanalyse** R-package was developed in the framework of this project and combines functions to analyze a discharge time series using descriptive statitics, threshold based low flow analysis and by estimating trends. For further information, please visit the package repository and find the description of the package: https://github.com/maibrittbergh/lfanalyse. 
+
+To follow this guide it will be useful to install the package to your R:
+```{r}
+
+# Please install the devtools package in case it's not already in your library.
+#install.packages("devtools") 
+library(devtools)
+install_github("maibrittbergh/lfanalyse")
+library(lfanalyse)
+```
+
+
+### Optional Dataset
+
+The  shiny [Chang et al., 2021] WebApp linked to this manual dealt with the GRDC-Dataset [GRDC, 2023]. Further information about this Project are available under the github repository of the webApp: https://github.com/maibrittbergh/lfwebapp. 
+
+The GRDC data set is continuously updated by the Global Runoff Data Centre (GRDC) and freely available under the following link: https://www.bafg.de/GRDC/EN/02_srvcs/21_tmsrs/210_prtl/prtl_node.html [GRDC, 2021]. It contains averaged daily or monthly discharge values for more than 10,000 stations in 159 countries [BFG, 2020]. The values unit is cubic metres per second. 
+To follow this guide for a specific station of interest please download it and open the guide. Otherwise, feel free to proceed following this guide by likewise using the example station "Dresden" in eastern Germany for a statistical analysis. 
+
+```{r}
+
+
+
+```
+
 
 
 ## Section 1: The goal of the Analysis
@@ -113,4 +140,10 @@ The noise
 - [Data Analysis Andrew Gelman ]
 - Korup 
 - LSI : Learning stat_ introduction
--
+-  R Core Team (2022). R: A language and environment for statistical
+R Core Team 2022: computing. R Foundation for Statistical Computing, Vienna, Austria.
+ URL https://www.R-project.org/.
+
+[GRDC, 2023]
+
+[Chang et al., 2021]- shiny package
