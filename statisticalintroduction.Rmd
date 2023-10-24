@@ -3,18 +3,9 @@ title: "Statistic Manual"
 subtitle: Created by Mai-Britt Berghöfer
 date: "1 January 2023"
 output:
-  html_document:
-    theme: journal
-    toc: yes
-    toc_float: true
-  pdf_document:
-    keep_tex: yes
-    latex_engine: xelatex
-  html_notebook: 
-    theme: journal
+  github_document:
     toc: true
-    toc_float: true
-fontsize: 12pt
+    toc_depth: 2
 ---
 
 ```{r setup, include=FALSE} 
