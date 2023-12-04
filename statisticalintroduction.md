@@ -1,6 +1,6 @@
 Statistic Manual
 ================
-1 January 2023
+1 December 2023
 
 - <a href="#hands-on-statistical-introduction-to-a-low-flow-analysis"
   id="toc-hands-on-statistical-introduction-to-a-low-flow-analysis">Hands
@@ -15,36 +15,36 @@ Statistic Manual
     2: Descriptive Statistics: The Variety of the Dataset</a>
   - <a href="#section-3-low-flow-periods"
     id="toc-section-3-low-flow-periods">Section 3: Low Flow Periods</a>
-  - <a href="#section-3-how-to-fit-a-trend"
-    id="toc-section-3-how-to-fit-a-trend">Section 3: How to fit a trend?</a>
-  - <a href="#section-4-the-linear-model"
-    id="toc-section-4-the-linear-model">Section 4: The Linear model</a>
-  - <a href="#linear-models-in-r-least-squares-or-sens-sloap"
-    id="toc-linear-models-in-r-least-squares-or-sens-sloap">Linear Models in
-    R: Least Squares or Sen’s Sloap?</a>
+  - <a href="#section-4-how-to-fit-a-trend"
+    id="toc-section-4-how-to-fit-a-trend">Section 4: How to fit a trend?</a>
+  - <a href="#section-5-the-linear-model"
+    id="toc-section-5-the-linear-model">Section 5: The Linear model</a>
+  - <a href="#section-6-linear-models-in-r-least-squares-or-sens-sloap"
+    id="toc-section-6-linear-models-in-r-least-squares-or-sens-sloap">Section
+    6: Linear Models in R: Least Squares or Sen’s Sloap?</a>
   - <a href="#sources" id="toc-sources">Sources:</a>
 
 # Hands on: Statistical Introduction to a low flow analysis
 
 ## How to follow this Guide
 
-This guide is supposed to an interactive guide to learn the statistical
-approach of low flow analysis. The best way to learn how to analyze
+This guide is supposed to be an interactive learning tutorial for the
+statistical low-flow analysis. The best way to learn how to analyze
 discharge measurements or other time series yourself is to follow this
 guide interactively by running the code yourself. The entire manual will
 be accompanied and based on the “R language and environment for
-statistical computing” \[R Core Team, 2022\]. It is an open source
+statistical computing” \[R Core Team, 2022\]. It is an open-source
 software and freely accessible (<https://www.r-project.org/about.html>).
 
 The **lfanalyse** R-package was developed in the framework of this
 project and combines functions to analyze a discharge time series using
-descriptive statitics, threshold based low flow analysis and by
-estimating trends. For further information, please visit the package
-repository and find the description of the package:
+descriptive statistics, threshold-based low-flow analysis, and by
+estimating trends. It bundles the functions that are used in this
+tutorial. For further information, please visit the package repository
+and find the description of the package:
 <https://github.com/maibrittbergh/lfanalyse>.
 
-To follow this guide it will be useful to install and library the
-packages:
+To follow this guide it will be useful to install and load the packages:
 
 ``` r
 library(devtools)
@@ -54,29 +54,34 @@ library(readr) #package is useful to read rds files.
 library(patchwork)
 ```
 
-If you are not sure about a specific function we will be using please
-check the R documentation to find a description of the function.
+If you are not sure about a specific function/package we will be using
+please check the R documentation to find a description of the function.
+
+``` r
+?lfanalyse
+```
 
 ### Dataset
 
 The GRDC data set is continuously updated by the Global Runoff Data
-Centre (GRDC) and freely available under the following link:
+Centre (GRDC) and is freely available under the following link:
 <https://www.bafg.de/GRDC/EN/02_srvcs/21_tmsrs/210_prtl/prtl_node.html>
-\[GRDC, 2021\]. It contains averaged daily or monthly discharge values
+\[GRDC, 2023\]. It contains averaged daily or monthly discharge values
 for more than 10,000 stations in 159 countries \[BFG, 2020\]. The values
 unit is cubic metres per second. Please download the data in daily
-resolution for all the stations that you are interested in. Save the
-downloaded data. The GRDC will send an email with the download link to
-you (normally within 24 hours).
+resolution for all the stations you are interested in. The GRDC will
+send an email to you providing the download link (normally within 24
+hours). Save the downloaded data locally.
 
 #### Load Data into R
 
-At first we will use the **metadata_grdc** function of the lfanalyse
-package to create a *metadataset* of the stations that we are interested
-in. Therefore you need the directory to the downloaded GRDC-data
-(**path**). Optional: if you only want to look at stations from one
-country of all the downloaded data, choose: **country_selection=T** and
-choose the country in the **Country** argument of the function:
+At first, we will use the **metadata_grdc** function of the lfanalyse
+package to create a *metadata set* including the stations we are
+interested in. Please save the directory to the downloaded data in a
+variable called (**path**). Optional: if you only want to look at
+stations from one country of all the downloaded data, choose:
+**country_selection=T** and select the country of interest in the
+**Country** argument of the function:
 
 ``` r
 path= "/Users/maibrittberghofer/Desktop/Arbeit/2022-11-02_10-59"
@@ -99,11 +104,11 @@ head(metadata)
     ## 5 2019-12      1960    2019      60  7.161034 51.39975
     ## 6 2017-04      1950    2017      68  7.581097 51.43599
 
-The function returns a dataframe. Each row in the dataframe represents a
-station of interest. With this dataframe, we can now load the discharge
-timeseries into R. This function reads in all the locally saved GRDC
-datasets and stores them into a list. Each entry of the list is a
-different station.
+The function returns a data frame. Each row in the data frame represents
+a station. With this data frame, we can now load the discharge
+time-series into R by using the **grdc_reader** function. This function
+reads in all the locally saved GRDC datasets and stores them in a list.
+Each entry of the list contains a different station.
 
 ``` r
 data=lfanalyse::grdc_reader(metadata, path)
@@ -112,23 +117,22 @@ data=lfanalyse::grdc_reader(metadata, path)
 ## Section 1: The goal of the Analysis
 
 The goal of this analysis is to detect whether one can observe a trend
-of observed discharge data.
+in the observed discharge data.
 
-At first we will have a closer look at our data to get a general idea of
-the seasonality, the range and the average discharge values.
+At first, we will have a closer look at our data to get a general idea
+of the seasonality, the range, and the average discharge values.
 
 ## Section 2: Descriptive Statistics: The Variety of the Dataset
 
 *Descriptive statistics* is the first step to many statistical analyses.
 It helps us to get a general idea of the dataset. How long is our time
-series? Maybe we want to know average values, different quantiles to be
-able to make a statement about low flow events? Looking at general
-properties of the timeseries, we might also be able to critically
-question our data. Maybe we can detect abrupt changes in the discharge
-data that could be explained by a human influence on the flow regime.
-Therefore a descriptive analysis is crucial for the planned trend
-analysis. In this manual we will have a look at the *Moselle*-station:
-*Cochem*:
+series? Maybe we want to know average values, and different quantiles to
+be able to make a statement about low-flow events. Looking at the
+general properties of the time series, we might also be able to
+critically question our data. Maybe we can detect abrupt changes in the
+discharge data which could be explained by a human influence on the flow
+regime. Descriptive analysis is crucial for the planned trend analysis.
+In this manual, we will have a look at the *Moselle*-station: *Cochem*:
 
 ``` r
 summary(data$COCHEM[,2])
@@ -144,7 +148,7 @@ bp=lfanalyse::QBoxplot(data, "COCHEM")
 Qplot/R
 ```
 
-![](statisticalintroduction_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](statisticalintroduction_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 \##### Question 1: What is remarkable? How would you describe the
 average discharge? Can you already see a seasonal variation?
 
@@ -154,7 +158,7 @@ ts2=timeslice(data, "COCHEM",  1970, 1990, 1990, 2010)
 ts/ts2
 ```
 
-![](statisticalintroduction_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](statisticalintroduction_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ##### Question 2:
 
@@ -162,10 +166,13 @@ What else could be helpful descriptive statistic approaches and why?
 
 ## Section 3: Low Flow Periods
 
-How do we define *low flow*? Analogous to the interactive analysistool
-we define the low flow threshold quantile based. If 90% of all measured
+How do we define *low flow*? Analogous to the interactive analysis tool
+we define the low-flow threshold quantile-based. If 90% of all measured
 values are higher than a specific value, this value is the
 station-specific Q90-low flow threshold \[Laaha und Blöschl, 2006\].
+Usually, the threshold value Qs for low water lies in the range between
+the 70% (Q70) and the 95% quantile (Q95) \[Oestermann & Mudersbach,
+2021\].
 
 ``` r
 Q90=quantile(data$COCHEM[,2],0.1)
@@ -175,19 +182,19 @@ print(Q90)
     ##  10% 
     ## 73.2
 
-The Q90-threshold of the considered timeseries is 73.2
-\[$\frac{m^3}{s}$\]. This value characterizes low flow events. If the
-measured discharge value is below the Q90-Threshold for several
+The Q90-threshold of the considered time series is 73.2
+\[$\frac{m^3}{s}$\]. This value characterizes low-flow events. If the
+measured discharge value is below the Q90 threshold for several
 consecutive days, this is defined as a low flow period. This period can
 be described with 3 variables \[Oestermann und Mudersbach, 2021\]:
 
 - Length: Number of days on which the threshold value is not exceeded in
   succession.
-- Deficit: Volume in m³ between threshold and the hydrograph.
+- Deficit: Volume in m³ between the threshold and the hydrograph.
 - Q90-threshold
 
 If we look at a certain timespan we can characterize tmax and Vmax, the
-maximum length of a low flow period and the maximum
+maximum length of a low flow period, and the maximum
 deficit\[$\frac{m^3}{s}$\] in the timespan.
 
 ``` r
@@ -196,22 +203,22 @@ periodplot18=U_periodploty(data, "COCHEM", 73.2, 2018, graph = T)
 periodplot18
 ```
 
-![](statisticalintroduction_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](statisticalintroduction_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 \##### Question 3: Look at low flow periods of different years. In which
-season do low flow events normally occur? What range of values can you
+season do low-flow events normally occur? What range of values can you
 observe for the maximal length of a low flow period?
 
-## Section 3: How to fit a trend?
+## Section 4: How to fit a trend?
 
 ### Which model?
 
-Of course we are very likely to loose information by trying to summarize
-the entire dataset in straigh lines of different slopes. For example: It
-could be possible that due to an increasing number of extreme heat
-events since 2000 there might have also more water scarcity events since
-2000. But if we only adjust a straight line from 1860 to 2000 we might
-loose information. Other models? This is an important and right point
-that leads us directly to a whole debate.
+Of course, we are very likely to lose information by trying to summarize
+the entire dataset in straight lines of different slopes. For example:
+It could be possible that due to an increasing number of extreme heat
+events since 2000, there might have also more water scarcity events
+since 2000. But if we only adjust a straight line from 1860 to 2000 we
+might lose information. Should we include different models? This is an
+important and right point that leads us directly to a whole debate.
 
 ##### Question 4:
 
@@ -221,15 +228,15 @@ in R?
 #### Prediction or statistical Inference?
 
 The overall assumption that there is any kind of relation between the
-discharge Value (Y) and the Time (X) we can write in a general form:
+discharge Value (Y) and the Time (X) can be written in a general form:
 
 y= f(X)+ε (3.1)
 
 Independently of the example to analyze discharge data, f(X) is not
-known but fixed and ε is an error term, independetn of X and has zero as
-a mean. From f we learn what x can tell us about y. At this point it
+known but fixed and ε is an error term, independent of X, and has zero
+as a mean. From f we learn what x can tell us about y. At this point, it
 should be mentioned that f could be constructed of more than one input
-variable. In many cases estimating f is very important, like:
+variable. In many cases estimating f is very important:
 
 1.  For Prediction
 
@@ -237,15 +244,15 @@ One can easily think of a situation where the input (x) is available but
 one can’t make any assumptions concerning y. Therefore we need to make a
 prediction $\hat{y}$ of y finding $\hat{f}$ that provides the most
 accuracy for y. In this case one can treat $\hat{f}$ like a **black
-box**. Therefor $\hat{f}$ will not be the perfect guess for our function
-f(x). How good our estimations of $\hat{y}$ for y are depends on the
-**reducible** and the **irreducible** error. The closer $\hat{f}$ is to
-f the more we can reduce this **reducible** error. Nevertheless y is a
-function of ε (1.1) therefore it is not possible to only predict it with
-x (or f(x)). This gap is described as the irreducible error. For a
+box**. Therefore $\hat{f}$ will not be the perfect guess for our
+function f(x). How good our estimations of $\hat{y}$ for y are depends
+on the **reducible** and the **irreducible** error. The closer $\hat{f}$
+is to f the more we can reduce this **reducible** error. Nevertheless, y
+is a function of ε (1.1) therefore it is not possible to only predict it
+with x (or f(x)). This gap is described as an irreducible error. For a
 prediction one can set ε=0 as it may contain unmeasured quantities that
 might hold additional information for the prediction, but as they are
-not measured there is no way to conlude them into our prediction.
+not measured there is no way to conclude them into our prediction.
 Therefore the prediction term is:
 
 $\hat{y}=\hat{f}(x)$ (3.2)
@@ -253,47 +260,47 @@ $\hat{y}=\hat{f}(x)$ (3.2)
 2.  For Inference
 
 Oftentimes we want to assess the relation between y and x
-($x_1, x_2,..., x_n$). In this case it is our goal to find out what f is
-although we dont want to make predictions for y.
+($x_1, x_2,..., x_n$). In this case, it is our goal to find out what f
+is although we don’t want to make predictions for y.
 
-Of course there is modeling consisting of prediction and inference at
+Of course, there is modeling consisting of prediction and inference at
 the same time as well. Depending on our goal or problem we can think of
 different ways to specify f. A linear model allows assumptions of
-statistical inference on first sight but might not always be appropriate
+statistical inference at first sight but might not always be appropriate
 for predictions.
 
-## Section 4: The Linear model
+## Section 5: The Linear model
 
 ### The Error
 
-As mentioned above (Section 3) $\hat{y}(x)$ clarifies that we speak
+As mentioned above (Section 4) $\hat{y}(x)$ clarifies that we speak
 about a prediction of y (dependent on x). It is important to keep in
-mind that the predictors/ parameters are unknown and need to estimated
-in a way that the resulting model fits the data as good as possible.
-**As good as possible** can also be expresses numerically by determining
-the error:
+mind that the predictors/ parameters are unknown and need to be
+estimated in a way that the resulting model fits the data as well as
+possible. **As well as possible** can also be expressed numerically by
+determining the error:
 
 $e_i=y_i-\hat{y}_i$. (4.3)
 
 To avoid the problem that negative residuals cancel out the positive
-residuals the **RSS: residual sum of sqaures is defined**:
+residuals the **RSS: residual sum of squares is defined**:
 
 $RSS=e_1^2+e_2^2+...e_n^2$ (4.4)
 
 By minimizing the **RSS** we obtain the best $w_0$ and $w_1$, this is
-described be the **Linear Least Squares Approach**:
+described by the **Linear Least Squares Approach**:
 
 $w_1=\frac{\sum_{i=1}^{n} (x_i-\overline{x})(y_i-\overline{y}}{\sum_{i=1}^{n} (x_i-\overline{x})^2}$
 (5)
 
 $w_0=\overline{y}-w_1\overline{x}$ (4.5)
 
-### From the Function to a model
+### From the Function to a Model
 
-From our assumptions (Section 1) we were assuming that there is a
-relationship between x and y: $y= f(X)+ε$. Furthermore we believe that
-the data and therefore f(x) can be represented by a linear function. The
-term “linear” refers to the linear model parameters/ coefficients.
+We were assuming (Section 1) that there is a relationship between x and
+y: $y= f(X)+ε$. Furthermore, we believe that the data and therefore f(x)
+can be represented by a linear function. The term “linear” refers to the
+linear model parameters/ coefficients.
 
 A linear model is constructed from a linear function: $y = w_0 + w_1* x$
 (4.1)
@@ -305,17 +312,18 @@ $y=w_0+w_1*x+ε$ (4.2)
 
 In this case:
 
-1.  $w_0, w_1$ are our cofficents/ parameters: $w_0$ is the intercept
+1.  $w_0, w_1$ are our coefficients/ parameters: $w_0$ is the intercept
     and $w_1$ the slope of our model
 2.  $x$ is our predictor
-3.  $ε$ the error term includes everything that we can’t adress with
+3.  $ε$ the error term includes everything that we can’t address with
     this simple equation ($ε$ is normally treated to be independent
-    of x) and follows a certain distribution.
+    of x) and follows a certain distribution. \[Dobson and Barnett,
+    2018\]
 
 ### The Noise
 
 Everything that is not explained with our model? This could just be a
-measurement error that we can never really rule out. Also its possible
+measurement error that we can never really rule out. Also, it’s possible
 that there are other variables than x that cause y to vary. Therefore
 looking at the noise can be very interesting to detect underlying trends
 and factors \[Scales and Snider, 1998\].
@@ -323,48 +331,41 @@ and factors \[Scales and Snider, 1998\].
 To understand noise better we will have a look at the words of Parzen’s
 (1960) about randomness:
 
-**“A random (orchance) phenomenon is an empirical phenomenon
-characterized by the property that its observation under a given set of
-circumstances does not always lead to the same observed outcomes (so
-that there is no deterministic regularity) but rather to different
-outcomes in such a way that there is statistical regularity. By this is
-meant that numbers exist between 0 and 1 that represent the relative
-frequency with which the different possible outcomes may be observed in
-a series of observations of independent occurrences of the
-phenomenon…”**
+**“A random phenomenon is an empirical phenomenon characterized by the
+property that its observation under a given set of circumstances does
+not always lead to the same observed outcomes (so that there is no
+deterministic regularity) but rather to different outcomes in such a way
+that there is statistical regularity. This is to be understood as
+numbers exist between 0 and 1 that represent the relative frequency with
+which the different possible outcomes may be observed in a series of
+observations of independent occurrences of the phenomenon…”**
 
-In many natural sciences our data is neither excact nor reproducible. In
-addition there is an infinte number of parameters in the earth system so
-that our models will always be approximations \[Scales and Snider,
-1998\].
+In many natural sciences, our data is neither exact nor reproducible. In
+addition, there is an infinite number of parameters in the Earth system
+so our models will always be approximations \[Scales and Snider, 1998\].
 
-In our example, looking at discharge data,it’s probably not necessary to
-mention that precipitation, temperature, ground water storage.. as well
-have an influence on our variable. Although it might seam obvious it is
-important to be mentioned as these variables partly explain
+In our example, looking at discharge data, it’s probably not necessary
+to mention that precipitation, temperature, groundwater storage.. as
+well have an influence on our variable. Although it might seem obvious
+it is important to be mentioned as these variables partly explain
 uncertainties in our approach and results.
 
-Even if we would be able to model every measurable influencing variable
-exactly our model would necessarily gain in significance. With a large
-number of degrees of freedom one can fit nay data - but is it worth
-fitting?\[Scales and Snider, 1998\].
+If we were able to model every measurable influencing variable exactly
+our model would necessarily gain in significance. With a large number of
+degrees of freedom one can fit any data - but is it worth
+fitting?\[Scales and Snider, 1998\]. After Dobrin and Savit (1988)
+“noise is that part of the data that we choose not to explain”.
 
-After Dobrin and Savit (1988) “noise that part of the data that we
-choose not to explain”.
+The noise follows a certain distribution which could be Gaussian,
+Laplace, Student’s t…
 
-As we are not able to reproduce exactly this outcome we might as well
-reduce the random noise by averaging \[Scales and Snider, 1998\].
-
-The noise follows a certain distribution which could be gaussian,
-laplace, Student’s t…
-
-In our analysis we assumed the noise to be gaussian distributed. This
+In our analysis, we assumed the noise to be Gaussian-distributed. This
 means that our predicted value for any value of x is:
 
 $\hat{y_i}=µ_i= w_0 + w_1* x$ (5.1)
 
-Assuming a gaussian normal distribution for the noise, we say that the
-data values are normaly distributed around the mean $\hat{µ}$
+Assuming a Gaussian normal distribution for the noise, we say that the
+data values are normally distributed around the mean $\hat{µ}$
 \[Kruschke, 2014\]. Our linear least squares regression line gives the
 mean of these distributions at any point.
 
@@ -372,19 +373,19 @@ mean of these distributions at any point.
 
 We distinguish between Univariate models (with just a single predictor)
 and Multivariate models with more than one predictor. As soon as we have
-multiple predictors it is more complicated to interpretate the
-coefficients as they are dependent on the other variables in the model
-\[Gelman, 2006\].
+multiple predictors it is more complicated to interpret the coefficients
+as they are dependent on the other variables in the model \[Gelman,
+2006\].
 
-In our analysis we will only look at a univariate model as our data
-\[GRDC, 2021\] simply consits of daily discharge measurements:
+In our analysis, we will only look at a univariate model as our data
+\[GRDC, 2021\] simply consists of daily discharge measurements:
 
-## Linear Models in R: Least Squares or Sen’s Sloap?
-
-##### Question 4:
+##### Question 5:
 
 In the context of this data analysis, what is the dependent variable and
 what is the independent variable?
+
+## Section 6: Linear Models in R: Least Squares or Sen’s Sloap?
 
 ### Least Squares
 
@@ -397,7 +398,7 @@ $$
 
 The error variable $\epsilon_i$ describes the random errors. Visually,
 $\epsilon$ describes the distance of the measurement points to the
-straight line. One fits the model to the straight line by minimising the
+straight line. One fits the model into a straight line by minimizing the
 square of these errors \[Frost, 2018\]. However, for the linear model to
 be valid, some basic assumptions must be made. Accordingly, the variance
 must be constant, i.e. there must be no pattern in the residuals, and
@@ -514,23 +515,23 @@ NM7Q=lfanalyse::NMxQ_trend(data, "COCHEM", 7)
 NM7Q
 ```
 
-![](statisticalintroduction_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
-
-#### Question 5:
-
-Try different numbers for x. How do the results differ?
+![](statisticalintroduction_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 #### Question 6:
 
-Hands on: try other functions to determine trends, like `MQ_trend` or
-`Qmin_trend`. Interprate the results. If you need help, try the R
-Documentation.
+Try different numbers for x. How do the results differ?
 
 #### Question 7:
 
-When is a trend significant?
+Hands-on: try other functions to determine trends, like `MQ_trend` or
+`Qmin_trend`. Interpretate the results. If you need help, try the R
+Documentation.
 
 #### Question 8:
+
+When is a trend significant?
+
+#### Question 9:
 
 What do you think: When are the differences between the results (Sen’s
 Sloap Trend/linear regression) highest?
@@ -538,7 +539,7 @@ Sloap Trend/linear regression) highest?
 ### Discussion: Sen’s Sloap or linear regression?
 
 In this tutorial, both approaches were used to allow a direct
-comparison. Due to a lower variance, the Sen’s Slope approach yields
+comparison. Due to lower variance, the Sen’s Slope approach yields
 better results for non-normally distributed datasets \[Huxol and
 Leibundgut, 2007\]. In addition, the approach is more robust to
 outliers. For normally distributed data, least squares estimation may
@@ -551,20 +552,23 @@ The choice of prewhitening affects both the statistical significance and
 the value of the slope, which is why this approach is further
 investigated \[Yue and Wang, 2002\] and is controversial today The
 answer to the question of whether there is a sufficient trend is very
-prone to error, as it is often not recognisable for laypersons whether
+prone to error, as it is often not recognizable for laypersons whether
 an observable trend is merely due to noise \[Zhang and Zwies, 2004\]
 Since TFPW approaches are more likely to produce significant results
 compared to other methods, the results of these approaches should be
 questioned and only used with an adjustment to the significance level.
-The default option of the `zyp` package uses a variance-inflation which
+The default option of the `zyp` package uses a variance inflation which
 is substantially different from the original Yue et al. 2002 approach
 and is also used for this analysis. In a significance test, care should
-be taken to ensure that the first kind error corresponds to the
+be taken to ensure that the first kind of error corresponds to the
 significance level. Using a Monte Carlo approach, it could be shown that
 high type I error rates occur in TFPW approaches with increasing
 autocorrelation \[Bürger, 2017\].
 
 ## Sources:
+
+\[Dobson and Barnett, 2018\] Dobson, A. J., & Barnett, A. G. (2018). An
+introduction to generalized linear models. CRC press.
 
 \[Bayazit and Önöz, 2007\] Bayazit, M., & Önöz, B. J. H. S. J. (2007).
 To prewhiten or not to prewhiten in trend analysis?. Hydrological
